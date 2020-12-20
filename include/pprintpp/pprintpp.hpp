@@ -89,13 +89,13 @@ template <class InList, class OutList, size_t Counter>
 struct find_brace;
 
 template <class InList, class OutList>
-struct find_brace<tl<char_t<'}'>, InList>, OutList, 1> {
+struct find_brace<typelist::tl<char_t<'}'>, InList>, OutList, 1> {
     using before = OutList;
     using after  = InList;
 };
 
 template <char C, class InList, class OutList, size_t N>
-struct find_brace<tl<char_t<C>, InList>, OutList, N>
+struct find_brace<typelist::tl<char_t<C>, InList>, OutList, N>
     : public find_brace<InList, append_t<OutList, char_t<C>>, N>
 {
     static_assert(C != '{', "Found nested braces: {...{...}...}!"
@@ -121,25 +121,25 @@ struct autoformat<null_t, TL> {
 };
 
 template <typename SL, typename TL>
-struct autoformat<tl<char_t<'%'>, tl<char_t<'%'>, SL>>, TL>
+struct autoformat<typelist::tl<char_t<'%'>, typelist::tl<char_t<'%'>, SL>>, TL>
 {
-    using type = tl<char_t<'%'>, tl<char_t<'%'>, typename autoformat<SL, TL>::type>>;
+    using type = typelist::tl<char_t<'%'>, typelist::tl<char_t<'%'>, typename autoformat<SL, TL>::type>>;
 };
 
 template <typename SL, typename T, typename TL>
-struct autoformat<tl<char_t<'%'>, SL>, tl<T, TL>>
+struct autoformat<typelist::tl<char_t<'%'>, SL>, typelist::tl<T, TL>>
 {
-    using type = tl<char_t<'%'>, typename autoformat<SL, TL>::type>;
+    using type = typelist::tl<char_t<'%'>, typename autoformat<SL, TL>::type>;
 };
 
 template <typename SL, typename TL>
-struct autoformat<tl<char_t<'\\'>, tl<char_t<'{'>, SL>>, TL>
+struct autoformat<typelist::tl<char_t<'\\'>, typelist::tl<char_t<'{'>, SL>>, TL>
 {
-    using type = tl<char_t<'{'>, typename autoformat<SL, TL>::type>;
+    using type = typelist::tl<char_t<'{'>, typename autoformat<SL, TL>::type>;
 };
 
 template <typename SL, typename TL>
-struct autoformat<tl<char_t<'{'>, SL>, TL>
+struct autoformat<typelist::tl<char_t<'{'>, SL>, TL>
 {
     using other_brace  = find_brace<SL, null_t, 1>;
     using format_block = typename other_brace::before;
@@ -149,13 +149,13 @@ struct autoformat<tl<char_t<'{'>, SL>, TL>
     using T = typename TL::head;
     using fmt_str = typename format_str<T, format_block>::type;
 
-    using type = tl<char_t<'%'>,
+    using type = typelist::tl<char_t<'%'>,
                     append_t<fmt_str, typename autoformat<rest_str, typename TL::tail>::type>>;
 };
 
 template <typename C, typename SL, typename TL>
-struct autoformat<tl<C, SL>, TL> {
-    using type = tl<C, typename autoformat<SL, TL>::type>;
+struct autoformat<typelist::tl<C, SL>, TL> {
+    using type = typelist::tl<C, typename autoformat<SL, TL>::type>;
 };
 
 
@@ -176,6 +176,7 @@ make_t<Ts...> tie_types(Ts...);
         af::str(); \
     })
 
+#pragma GCC diagnostic ignored "-Wformat-security"
 #define pprintf(s, ...) printf(AUTOFORMAT(s, ## __VA_ARGS__), ## __VA_ARGS__);
 
 }
